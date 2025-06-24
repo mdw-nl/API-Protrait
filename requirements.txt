@@ -1,0 +1,10 @@
+
+fastapi
+pandas
+uvicorn
+PyYAML
+python-multipart
+psycopg
+sqlalchemy
+sparqlwrapper
+requests
