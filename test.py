@@ -9,7 +9,7 @@ p_id = "hypog01-FR-04-0002-P-L"
 url3 = f"http://localhost:8000/patients/{p_id}"
 params3 = {"endpoint": "http://host.docker.internal:7200/repositories/protrait"}
 
-response = requests.get(url3, params=params3)
+response = requests.get(url2, params=params2)
 print(response.status_code)
 if response.status_code != 200 and response.status_code != 201 and response.status_code != 204:
     print(f"Error: {response.status_code} - {response.text}")

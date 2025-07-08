@@ -24,6 +24,21 @@ where {
     ?x ldcmdh:dvh_v_point ?v_value.
     } 
     """
+dvh = """
+PREFIX ldcm: <https://johanvansoest.nl/ontologies/LinkedDicom/>
+PREFIX ldcmdh: <https://johanvansoest.nl/ontologies/LinkedDicom-dvh/>
+prefix schema: <https://schema.org/>
+select distinct ?p_id ?name ?x ?d_value ?v_value
+where {{
+	?s ldcmdh:PatientIdentifier ?p_id.
+	FILTER(?p_id = '{p_id}' && ?name = '{str}' ).
+    ?s ldcmdh:containsStructureDose ?str.
+    ?str ldcmdh:structureName ?name.
+    ?str ldcmdh:dvh_curve ?f.
+    ?f ldcmdh:dvh_point ?x.
+    ?x ldcmdh:dvh_d_point ?d_value.
+    ?x ldcmdh:dvh_v_point ?v_value.
+}} """
 
 query_detail_patient = """
 PREFIX ldcm: <https://johanvansoest.nl/ontologies/LinkedDicom/>

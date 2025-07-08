@@ -25,7 +25,7 @@ class SparqlDataFetcher:
         return _get_data(query, self.endpoint, **param)
 
 
-def _get_data(query: str, endpoint: str = None, batch_size: int = 100, max_batches: int = None,
+def _get_data(query: str, endpoint: str = None,
               **param: None) -> pd.DataFrame:
     """
     Fetches data from a SPARQL endpoint and returns it as a pandas DataFrame.
@@ -37,37 +37,21 @@ def _get_data(query: str, endpoint: str = None, batch_size: int = 100, max_batch
     Returns:
         pandas.DataFrame: The results of the SPARQL query as a DataFrame.
     """
-    offset = 0
-    batch_count = 0
+
     if param:
         logging.info(f"params is {param}")
         query = query.format(**param)
         logging.info(f"Query after formatting: {query}")
     else:
         logging.info("No params provided, using query as is")
+    base_query = query
+    sparql = SPARQLWrapper(endpoint)
+    sparql.setQuery(base_query)
+    sparql.setReturnFormat(JSON)
+    results = sparql.query().convert()
+    result_processed = pd.json_normalize(results['results']['bindings'])
 
-    f_res = []
-    while True:
-        base_query= f"""
-        {query}
-        LIMIT {batch_size}
-        OFFSET {offset}
-        """
-        sparql = SPARQLWrapper(endpoint)
-        sparql.setQuery(base_query)
-        sparql.setReturnFormat(JSON)
-        results = sparql.query().convert()
-        result_processed = pd.json_normalize(results['results']['bindings'])
-        if result_processed.empty:
-            break
-
-        f_res.append(result_processed)
-        offset += batch_size
-        batch_count += 1
-
-        if max_batches and batch_count >= max_batches:
-            break
-    full_df = pd.concat(f_res, ignore_index=True)
+    full_df = result_processed
     # Clean .value columns
     value_cols = [col for col in full_df.columns if col.endswith('.value')]
     clean_df = full_df[value_cols]

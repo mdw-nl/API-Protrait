@@ -52,7 +52,7 @@ async def get_patients_by_id(endpoint: str, p_id: str):
 
 
 @app.get("/dvh_curve", tags=["DVH curve"], summary="Retrieve DVH curve per patient and structure")
-async def get_patients_processed(endpoint: str):
+async def get_patients_processed(endpoint: str,p_id: str, str:str):
     """
     Endpoint to retrieve all patients ID for which dvh calculation has been done.
 
@@ -62,7 +62,7 @@ async def get_patients_processed(endpoint: str):
     try:
         sdf = SparqlDataFetcher(endpoint=endpoint)
         # result = await sdf.get_data(query=dvh_curve_query)
-        result = await run_in_threadpool(sdf.get_data, dvh_curve_query)
+        result = await run_in_threadpool(sdf.get_data, dvh_curve_query, **{"p_id": p_id, "str": str})
         logging.info(f"Retrieved {len(result)} patients.")
         return {"patients": result}
     except Exception as e:
