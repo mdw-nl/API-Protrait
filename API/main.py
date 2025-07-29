@@ -11,6 +11,16 @@ app = FastAPI()
 logging.basicConfig(filename='example.log', level=logging.INFO, format='%(asctime)s:%(levelname)s:%(message)s')
 
 
+@app.get("/", tags=["Root"], summary="Root Endpoint")
+async def root():
+    """
+    Root endpoint to check if the API is running.
+
+    Returns:
+        dict: A simple message indicating that the API is running.
+    """
+    return {"message": "API is running"}
+
 @app.get("/patients", tags=["Patient Data"], summary="Retrieve Patient IDs")
 async def get_patients_processed(endpoint: str):
     """
