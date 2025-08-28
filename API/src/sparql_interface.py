@@ -22,11 +22,11 @@ class SparqlDataFetcher:
         Returns:
             pandas.DataFrame: The results of the SPARQL query as a DataFrame.
         """
-        return _get_data(query, self.endpoint, **param)
+        return _get_data_sparql(query, self.endpoint, **param)
 
 
-def _get_data(query: str, endpoint: str = None,
-              **param: None) -> pd.DataFrame:
+def _get_data_sparql(query: str, endpoint: str = None,
+                     **param: None) -> pd.DataFrame:
     """
     Fetches data from a SPARQL endpoint and returns it as a pandas DataFrame.
 
@@ -59,3 +59,4 @@ def _get_data(query: str, endpoint: str = None,
     # Rename them to remove the `.value` suffix
     clean_df.columns = [col.replace('.value', '') for col in clean_df.columns]
     return clean_df
+

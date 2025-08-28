@@ -1,13 +1,14 @@
 import requests
 import logging
-from src.data import SparqlDataFetcher
-from src.query import patient_id_query, dvh_curve_query, query222
+from src.sparql_interface import SparqlDataFetcher
+from src.sparql_query import patient_id_query, dvh_curve_query, query_filter_by_id, query_clinical_patient
 import traceback
 from fastapi import FastAPI, Body, Query, HTTPException
 from fastapi.concurrency import run_in_threadpool
 from fastapi.responses import JSONResponse
-app = FastAPI()
 
+
+app = FastAPI()
 logging.basicConfig(filename='example.log', level=logging.INFO, format='%(asctime)s:%(levelname)s:%(message)s')
 
 
@@ -21,7 +22,8 @@ async def root():
     """
     return {"message": "API is running"}
 
-@app.get("/patients", tags=["Patient Data"], summary="Retrieve Patient IDs")
+
+@app.get("/patients_dvh", tags=["Patient Data"], summary="Retrieve Patient IDs")
 async def get_patients_processed(endpoint: str):
     """
     Endpoint to retrieve all patients ID for which dvh calculation has been done.
@@ -41,7 +43,7 @@ async def get_patients_processed(endpoint: str):
         raise HTTPException(status_code=400, detail="Failed to retrieve patient data.")
 
 
-@app.get("/patients/{p_id}", tags=["Patient Data"], summary="Retrieve Patient IDs")
+@app.get("/patients_dvh/{p_id}", tags=["Patient Data"], summary="Retrieve Patient IDs DVH")
 async def get_patients_by_id(endpoint: str, p_id: str):
     """
     Endpoint to retrieve all patients ID for which dvh calculation has been done.
@@ -51,7 +53,7 @@ async def get_patients_by_id(endpoint: str, p_id: str):
     """
     try:
         sdf = SparqlDataFetcher(endpoint=endpoint)
-        result = await run_in_threadpool(sdf.get_data, query222, **{"p_id": p_id})
+        result = await run_in_threadpool(sdf.get_data, query_filter_by_id, **{"p_id": p_id})
         logging.info(f"Retrieved {len(result)} patients.")
         return JSONResponse(content=result.to_dict(orient="records"))
     except Exception as e:
@@ -62,7 +64,7 @@ async def get_patients_by_id(endpoint: str, p_id: str):
 
 
 @app.get("/dvh_curve", tags=["DVH curve"], summary="Retrieve DVH curve per patient and structure")
-async def get_patients_processed(endpoint: str,p_id: str, str:str):
+async def get_patients_processed(endpoint: str, p_id: str, str: str):
     """
     Endpoint to retrieve all patients ID for which dvh calculation has been done.
 
@@ -82,7 +84,6 @@ async def get_patients_processed(endpoint: str,p_id: str, str:str):
         raise HTTPException(status_code=400, detail="Failed to retrieve patient data.")
 
 
-# post request to upload json to graphdb
 @app.post("/upload_json", tags=["GraphDB Operations"], summary="Upload JSON-LD to GraphDB")
 async def upload_json_to_graphdb(jsonld_data: dict = Body(...), endpoint: str = Query(...)):
     """
@@ -112,3 +113,26 @@ async def upload_json_to_graphdb(jsonld_data: dict = Body(...), endpoint: str = 
         raise HTTPException(status_code=500, detail="Failed to upload data to GraphDB.")
 
 
+@app.get("/clinical_patient", tags=["Clinical Data"], summary="Retrieve Clinical Data")
+async def get_patient_clinical_data(endpoint: str):
+    """
+    Endpoint to retrieve clinical data for a specific patient.
+
+    Args:
+        endpoint (str): The GraphDB repository URL.
+        p_id (str): The patient ID.
+
+    Returns:
+        dict: A dictionary containing the clinical data for the specified patient.
+    """
+    try:
+        sdf = SparqlDataFetcher(endpoint=endpoint)
+        # result = await sdf.get_data(query=dvh_curve_query)
+        result = await run_in_threadpool(sdf.get_data, query_clinical_patient)
+        logging.info(f"Retrieved {len(result)} patients.")
+        return {"patients": result}
+    except Exception as e:
+        logging.warning(f"Exception occurred while retrieving patient data: {traceback.format_exc()}")
+
+        logging.error(f"Error retrieving dvh data: {e}")
+        raise HTTPException(status_code=400, detail="Failed to retrieve patient data.")

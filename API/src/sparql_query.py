@@ -57,7 +57,7 @@ where {{
 }}
     """
 
-query222 = """
+query_filter_by_id = """
 PREFIX ldcm: <https://johanvansoest.nl/ontologies/LinkedDicom/>
 PREFIX ldcmdh: <https://johanvansoest.nl/ontologies/LinkedDicom-dvh/>
 prefix schema: <https://schema.org/>
@@ -77,4 +77,14 @@ where {{
     ?vmean schema:value ?mean.
     ?vvolume schema:value ?volume.
 }}
+"""
+
+query_clinical_patient = """
+
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+
+select distinct ?s 
+where {
+    ?s rdf:type <http://ncicb.nci.nih.gov/xml/owl/EVS/Thesaurus.owl#C16960> .
+} 
 """
