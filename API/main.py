@@ -130,7 +130,7 @@ async def get_patient_clinical_data(endpoint: str):
         # result = await sdf.get_data(query=dvh_curve_query)
         result = await run_in_threadpool(sdf.get_data, query_clinical_patient)
         logging.info(f"Retrieved {len(result)} patients.")
-        return {"patients": result}
+        return JSONResponse(content=result.to_dict(orient="records"))
     except Exception as e:
         logging.warning(f"Exception occurred while retrieving patient data: {traceback.format_exc()}")
 
