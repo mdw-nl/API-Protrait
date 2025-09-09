@@ -80,11 +80,26 @@ where {{
 """
 
 query_clinical_patient = """
-
 PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-
-select distinct ?s 
+prefix protrait: <https://protrait.com/>
+select distinct ?z
 where {
     ?s rdf:type <http://ncicb.nci.nih.gov/xml/owl/EVS/Thesaurus.owl#C16960> .
+    ?s protrait:ID ?z
+   
 } 
 """
+
+query_clinical_sub_cat = """
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+prefix protrait: <https://protrait.com/>
+PREFIX ns1: <http://ncicb.nci.nih.gov/xml/owl/EVS/Thesaurus.owl#>
+select distinct ?x
+where {
+    ?s rdf:type <http://ncicb.nci.nih.gov/xml/owl/EVS/Thesaurus.owl#C16960> .
+    ?s protrait:ID ?z.
+    ?s protrait:has ?x
+    filter(?z ='{p_id}')
+    
+    
+} """

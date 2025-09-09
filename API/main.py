@@ -7,7 +7,6 @@ from fastapi import FastAPI, Body, Query, HTTPException
 from fastapi.concurrency import run_in_threadpool
 from fastapi.responses import JSONResponse
 
-
 app = FastAPI()
 logging.basicConfig(filename='example.log', level=logging.INFO, format='%(asctime)s:%(levelname)s:%(message)s')
 
@@ -129,6 +128,30 @@ async def get_patient_clinical_data(endpoint: str):
         sdf = SparqlDataFetcher(endpoint=endpoint)
         # result = await sdf.get_data(query=dvh_curve_query)
         result = await run_in_threadpool(sdf.get_data, query_clinical_patient)
+        logging.info(f"Retrieved {len(result)} patients.")
+        return JSONResponse(content=result.to_dict(orient="records"))
+    except Exception as e:
+        logging.warning(f"Exception occurred while retrieving patient data: {traceback.format_exc()}")
+
+        logging.error(f"Error retrieving dvh data: {e}")
+        raise HTTPException(status_code=400, detail="Failed to retrieve patient data.")
+
+
+@app.get("/clinical_patient/{p_id}", tags=["Clinical Data"], summary="Retrieve Clinical Data by patient ID")
+async def get_clinical_data_by_patient_id(endpoint: str, p_id: str):
+    """
+    Endpoint to retrieve clinical data for a specific patient.
+
+    Args:
+        endpoint (str): The GraphDB repository URL.
+        p_id (str): The patient ID.
+
+    Returns:
+        dict: A dictionary containing the clinical data for the specified patient.
+    """
+    try:
+        sdf = SparqlDataFetcher(endpoint=endpoint)
+        result = await run_in_threadpool(sdf.get_data, query_clinical_patient, **{"p_id": p_id})
         logging.info(f"Retrieved {len(result)} patients.")
         return JSONResponse(content=result.to_dict(orient="records"))
     except Exception as e:
