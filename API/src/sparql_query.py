@@ -95,24 +95,22 @@ PREFIX pro:  <https://protrait.com/>
 PREFIX rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
 
 SELECT DISTINCT ?id ?name_c
-WHERE {
-  # Every patient
-  ?patient pro:ID ?id .
-    filter(?id ='{p_id}')
+WHERE {{
 
-  # Patient → cancerTreatment → radiotherapy (exact root, no guessing)
+  ?patient pro:ID ?id .
+  filter(?id ='{p_id}')
   ?patient pro:has ?cat.
   ?cat pro:has_name ?name_c.
   
-}
-   """
+}}
+"""
 
 query_clinical_patient_detail = """
 PREFIX pro:  <https://protrait.com/>
 PREFIX rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
 
 SELECT DISTINCT ?name_c2 ?field ?value
-WHERE {
+WHERE {{
   # Every patient
   ?patient pro:ID ?id .
     filter(?id ='{p_id}')
@@ -132,7 +130,6 @@ WHERE {
    BIND( REPLACE(STR(?node), ".*/", "") AS ?field )
   
   
-}
-}
+}}
 """
 
