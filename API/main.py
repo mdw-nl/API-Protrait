@@ -1,7 +1,8 @@
 import requests
 import logging
 from src.sparql_interface import SparqlDataFetcher
-from src.sparql_query import patient_id_query, dvh_curve_query, query_filter_by_id, query_clinical_patient
+from src.sparql_query import patient_id_query, dvh_curve_query, query_filter_by_id, \
+    query_clinical_patient, query_clinical_cat, query_clinical_patient_detail
 import traceback
 from fastapi import FastAPI, Body, Query, HTTPException
 from fastapi.concurrency import run_in_threadpool
@@ -151,8 +152,27 @@ async def get_clinical_data_by_patient_id(endpoint: str, p_id: str):
     """
     try:
         sdf = SparqlDataFetcher(endpoint=endpoint)
-        result = await run_in_threadpool(sdf.get_data, query_clinical_patient, **{"p_id": p_id})
+        result = await run_in_threadpool(sdf.get_data, query_clinical_cat, **{"p_id": p_id})
         logging.info(f"Retrieved {len(result)} patients.")
+        return JSONResponse(content=result.to_dict(orient="records"))
+    except Exception as e:
+        logging.warning(f"Exception occurred while retrieving patient data: {traceback.format_exc()}")
+
+        logging.error(f"Error retrieving dvh data: {e}")
+        raise HTTPException(status_code=400, detail="Failed to retrieve patient data.")
+
+
+@app.get("/clinical_detail/{p_id}/{sub}", tags=["Clinical Detail"], summary="Clinical Detail sub cat")
+async def get_clinical_detail(endpoint: str, p_id: str, cat: str):
+    """
+    Detail of the clinical data for a specific patient and category.
+
+    Returns:
+        dict: A dictionary containing the clinical data for the specified patient and sub category.
+    """
+    try:
+        sdf = SparqlDataFetcher(endpoint=endpoint)
+        result = await run_in_threadpool(sdf.get_data, query_clinical_patient_detail, **{"p_id": p_id, "cat": cat})
         return JSONResponse(content=result.to_dict(orient="records"))
     except Exception as e:
         logging.warning(f"Exception occurred while retrieving patient data: {traceback.format_exc()}")

@@ -82,24 +82,57 @@ where {{
 query_clinical_patient = """
 PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
 prefix protrait: <https://protrait.com/>
-select distinct ?z
+select distinct ?id
 where {
     ?s rdf:type <http://ncicb.nci.nih.gov/xml/owl/EVS/Thesaurus.owl#C16960> .
-    ?s protrait:ID ?z
+    ?s protrait:ID ?id
    
 } 
 """
 
-query_clinical_sub_cat = """
-PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-prefix protrait: <https://protrait.com/>
-PREFIX ns1: <http://ncicb.nci.nih.gov/xml/owl/EVS/Thesaurus.owl#>
-select distinct ?x
-where {
-    ?s rdf:type <http://ncicb.nci.nih.gov/xml/owl/EVS/Thesaurus.owl#C16960> .
-    ?s protrait:ID ?z.
-    ?s protrait:has ?x
-    filter(?z ='{p_id}')
-    
-    
-} """
+query_clinical_cat = """
+PREFIX pro:  <https://protrait.com/>
+PREFIX rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+
+SELECT DISTINCT ?id ?name_c
+WHERE {
+  # Every patient
+  ?patient pro:ID ?id .
+    filter(?id ='{p_id}')
+
+  # Patient → cancerTreatment → radiotherapy (exact root, no guessing)
+  ?patient pro:has ?cat.
+  ?cat pro:has_name ?name_c.
+  
+}
+   """
+
+query_clinical_patient_detail = """
+PREFIX pro:  <https://protrait.com/>
+PREFIX rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+
+SELECT DISTINCT ?name_c2 ?field ?value
+WHERE {
+  # Every patient
+  ?patient pro:ID ?id .
+    filter(?id ='{p_id}')
+
+  # Patient → cancerTreatment → radiotherapy (exact root, no guessing)
+  ?patient pro:has ?cat.
+  ?cat pro:has_name ?name_c.
+  filter(?name_c ='{cat}')
+  ?cat pro:has ?cat2.
+  ?cat2 pro:has_name ?name_c2.
+  
+
+  # Any descendant node that has a value
+  ?cat2 (pro:has)+ ?node .
+  ?node pro:has_value ?value .
+  ?prenode pro:has ?node.
+   BIND( REPLACE(STR(?node), ".*/", "") AS ?field )
+  
+  
+}
+}
+"""
+
