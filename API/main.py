@@ -162,7 +162,7 @@ async def get_clinical_data_by_patient_id(endpoint: str, p_id: str):
         raise HTTPException(status_code=400, detail="Failed to retrieve patient data.")
 
 
-@app.get("/clinical_detail/{p_id}/{sub}", tags=["Clinical Detail"], summary="Clinical Detail sub cat")
+@app.get("/clinical_detail/{p_id}/{cat}", tags=["Clinical Detail"], summary="Clinical Detail sub cat")
 async def get_clinical_detail(endpoint: str, p_id: str, cat: str):
     """
     Detail of the clinical data for a specific patient and category.
