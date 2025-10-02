@@ -79,17 +79,58 @@ where {{
 }}
 """
 
-query_clinical_patient = """
+query_clinical_patient_g = """
+PREFIX path: <http://www.ontotext.com/path#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX nsi: <http://www.cancerdata.org/roo/>
+PREFIX ncicb: <http://ncicb.nci.nih.gov/xml/owl/EVS/Thesaurus.owl#>
+SELECT ?id
+    WHERE {
+      # if instances might be typed via subclasses, keep the path:
+      ?pat rdf:type/rdfs:subClassOf* ncicb:C16960 .
+      
+      ?pat nsi:P100061 ?id_h.
+      ?id_h nsi:P100042 ?id
+      
+}
+"""
+
+query_clinical_data_sp_g = """
+PREFIX rdf:   <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs:  <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX nsi:   <http://www.cancerdata.org/roo/>
+PREFIX ncicb: <http://ncicb.nci.nih.gov/xml/owl/EVS/Thesaurus.owl#>
+
+SELECT DISTINCT ?name ?value
+WHERE {
+  # anchor the patient by its P100061/P100042 id
+  ?pat rdf:type/rdfs:subClassOf* ncicb:C16960 ;
+  nsi:P100061 ?id_h .
+  ?id_h nsi:P100042 ?pid.
+  FILTER(?pid ='{p_id}').
+  # traverse ANY predicates except P100061, to any depth
+  ?pat !(nsi:P100061)+ ?node .
+  # leaf values
+  ?node (nsi:P100042|nsi:local_value) ?value .
+  # friendly field label
+  BIND(REPLACE(STR(?node), ".*/", "") AS ?field)
+  BIND( REPLACE(STR(?node), "/[^/]*$", "") AS ?withoutLast )
+  BIND(REPLACE(str(?withoutLast),".*/","")as ?name)
+}
+
+"""
+
+query_clinical_patient_hn = """
 PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
 prefix protrait: <https://protrait.com/>
 select distinct ?id
 where {
     ?s rdf:type <http://ncicb.nci.nih.gov/xml/owl/EVS/Thesaurus.owl#C16960> .
     ?s protrait:ID ?id
-   
+
 } 
 """
-
 query_clinical_cat = """
 PREFIX pro:  <https://protrait.com/>
 PREFIX rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
@@ -132,4 +173,3 @@ WHERE {{
   
 }}
 """
-
