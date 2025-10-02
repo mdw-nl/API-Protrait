@@ -134,7 +134,7 @@ async def get_patient_clinical_data(endpoint: str):
     except Exception as e:
         logging.warning(f"Exception occurred while retrieving patient data: {traceback.format_exc()}")
 
-        logging.error(f"Error retrieving dvh data: {e}")
+        logging.error(f"Error retrieving : {e}")
         raise HTTPException(status_code=400, detail="Failed to retrieve patient data.")
 
 
@@ -158,7 +158,7 @@ async def get_generic_by_patient_id(endpoint: str, p_id: str):
     except Exception as e:
         logging.warning(f"Exception occurred while retrieving patient data: {traceback.format_exc()}")
 
-        logging.error(f"Error retrieving dvh data: {e}")
+        logging.error(f"Error retrieving : {e}")
         raise HTTPException(status_code=400, detail="Failed to retrieve patient data.")
 
 

@@ -103,21 +103,23 @@ PREFIX nsi:   <http://www.cancerdata.org/roo/>
 PREFIX ncicb: <http://ncicb.nci.nih.gov/xml/owl/EVS/Thesaurus.owl#>
 
 SELECT DISTINCT ?name ?value
-WHERE {
+WHERE {{
   # anchor the patient by its P100061/P100042 id
   ?pat rdf:type/rdfs:subClassOf* ncicb:C16960 ;
   nsi:P100061 ?id_h .
   ?id_h nsi:P100042 ?pid.
   FILTER(?pid ='{p_id}').
   # traverse ANY predicates except P100061, to any depth
+  
   ?pat !(nsi:P100061)+ ?node .
   # leaf values
   ?node (nsi:P100042|nsi:local_value) ?value .
+  
   # friendly field label
   BIND(REPLACE(STR(?node), ".*/", "") AS ?field)
   BIND( REPLACE(STR(?node), "/[^/]*$", "") AS ?withoutLast )
   BIND(REPLACE(str(?withoutLast),".*/","")as ?name)
-}
+}}
 
 """
 
