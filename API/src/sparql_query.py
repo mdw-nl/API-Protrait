@@ -121,12 +121,6 @@ WHERE {{
   BIND("Generic" AS ?cat)
     }}
 
-
-
-
-
-}}
-
 """
 
 query_clinical_patient_hn = """
