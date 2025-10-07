@@ -102,23 +102,29 @@ PREFIX rdfs:  <http://www.w3.org/2000/01/rdf-schema#>
 PREFIX nsi:   <http://www.cancerdata.org/roo/>
 PREFIX ncicb: <http://ncicb.nci.nih.gov/xml/owl/EVS/Thesaurus.owl#>
 
-SELECT DISTINCT ?name ?value
+SELECT DISTINCT ?cat ?name ?value
 WHERE {{
   # anchor the patient by its P100061/P100042 id
   ?pat rdf:type/rdfs:subClassOf* ncicb:C16960 ;
-  nsi:P100061 ?id_h .
+       nsi:P100061 ?id_h .
   ?id_h nsi:P100042 ?pid.
   FILTER(?pid ='{p_id}').
+
   # traverse ANY predicates except P100061, to any depth
-  
   ?pat !(nsi:P100061)+ ?node .
   # leaf values
   ?node (nsi:P100042|nsi:local_value) ?value .
-  
   # friendly field label
   BIND(REPLACE(STR(?node), ".*/", "") AS ?field)
   BIND( REPLACE(STR(?node), "/[^/]*$", "") AS ?withoutLast )
   BIND(REPLACE(str(?withoutLast),".*/","")as ?name)
+  BIND("Generic" AS ?cat)
+    }}
+
+
+
+
+
 }}
 
 """
@@ -133,17 +139,44 @@ where {
 
 } 
 """
+#query_clinical_cat = """
+#PREFIX pro:  <https://protrait.com/>
+#PREFIX rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+#
+#SELECT DISTINCT ?id ?name_c
+#WHERE {{
+#
+#  ?patient pro:ID ?id .
+#  filter(?id ='{p_id}')
+#  ?patient pro:has ?cat.
+#  ?cat pro:has_name ?name_c.
+#
+#}}
+#"""
 query_clinical_cat = """
 PREFIX pro:  <https://protrait.com/>
 PREFIX rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
 
-SELECT DISTINCT ?id ?name_c
+SELECT DISTINCT ?cat ?name ?value
 WHERE {{
-
+  # Every patient
   ?patient pro:ID ?id .
   filter(?id ='{p_id}')
-  ?patient pro:has ?cat.
-  ?cat pro:has_name ?name_c.
+
+  # Patient → cancerTreatment → radiotherapy (exact root, no guessing)
+  ?patient pro:has ?cat1.
+  ?cat1 pro:has_name ?name_c.
+
+  ?cat1 pro:has ?cat2.
+  ?cat2 pro:has_name ?cat.
+  
+
+  # Any descendant node that has a value
+  ?cat2 (pro:has)+ ?node .
+  ?node pro:has_value ?value .
+  ?prenode pro:has ?node.
+   BIND( REPLACE(STR(?node), ".*/", "") AS ?name )
+  
   
 }}
 """
@@ -152,25 +185,25 @@ query_clinical_patient_detail = """
 PREFIX pro:  <https://protrait.com/>
 PREFIX rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
 
-SELECT DISTINCT ?name_c2 ?field ?value
+SELECT DISTINCT ?cat ?name ?value
 WHERE {{
   # Every patient
   ?patient pro:ID ?id .
-    filter(?id ='{p_id}')
+  filter(?id ='{p_id}')
 
   # Patient → cancerTreatment → radiotherapy (exact root, no guessing)
-  ?patient pro:has ?cat.
-  ?cat pro:has_name ?name_c.
+  ?patient pro:has ?cat1.
+  ?cat1 pro:has_name ?name_c.
   filter(?name_c ='{cat}')
-  ?cat pro:has ?cat2.
-  ?cat2 pro:has_name ?name_c2.
+  ?cat1 pro:has ?cat2.
+  ?cat2 pro:has_name ?cat.
   
 
   # Any descendant node that has a value
   ?cat2 (pro:has)+ ?node .
   ?node pro:has_value ?value .
   ?prenode pro:has ?node.
-   BIND( REPLACE(STR(?node), ".*/", "") AS ?field )
+   BIND( REPLACE(STR(?node), ".*/", "") AS ?name )
   
   
 }}

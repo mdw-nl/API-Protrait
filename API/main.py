@@ -162,30 +162,30 @@ async def get_generic_by_patient_id(endpoint: str, p_id: str):
         raise HTTPException(status_code=400, detail="Failed to retrieve patient data.")
 
 
-#@app.get("/clinical_patient/{p_id}", tags=["Clinical Data"], summary="Retrieve Clinical Data by patient ID")
-#async def get_clinical_data_by_patient_id(endpoint: str, p_id: str):
-#    """
-#    Endpoint to retrieve clinical data for a specific patient.
-#
-#    Args:
-#        endpoint (str): The GraphDB repository URL.
-#        p_id (str): The patient ID.
-#
-#    Returns:
-#        dict: A dictionary containing the clinical data for the specified patient.
-#    """
-#    try:
-#        sdf = SparqlDataFetcher(endpoint=endpoint)
-#        result = await run_in_threadpool(sdf.get_data, query_clinical_cat, **{"p_id": p_id})
-#        logging.info(f"Retrieved {len(result)} patients.")
-#        return JSONResponse(content=result.to_dict(orient="records"))
-#    except Exception as e:
-#        logging.warning(f"Exception occurred while retrieving patient data: {traceback.format_exc()}")
-#
-#        logging.error(f"Error retrieving dvh data: {e}")
-#        raise HTTPException(status_code=400, detail="Failed to retrieve patient data.")
-#
-#
+@app.get("/clinical_patient_c/{p_id}", tags=["Clinical Data"], summary="Retrieve Clinical Data by patient ID")
+async def get_clinical_data_by_patient_id(endpoint: str, p_id: str):
+    """
+    Endpoint to retrieve clinical data for a specific patient.
+
+    Args:
+        endpoint (str): The GraphDB repository URL.
+        p_id (str): The patient ID.
+
+    Returns:
+        dict: A dictionary containing the clinical data for the specified patient.
+    """
+    try:
+        sdf = SparqlDataFetcher(endpoint=endpoint)
+        result = await run_in_threadpool(sdf.get_data, query_clinical_cat, **{"p_id": p_id})
+        logging.info(f"Retrieved {len(result)} patients.")
+        return JSONResponse(content=result.to_dict(orient="records"))
+    except Exception as e:
+        logging.warning(f"Exception occurred while retrieving patient data: {traceback.format_exc()}")
+
+        logging.error(f"Error retrieving dvh data: {e}")
+        raise HTTPException(status_code=400, detail="Failed to retrieve patient data.")
+
+
 #@app.get("/clinical_detail/{p_id}/{cat}", tags=["Clinical Detail"], summary="Clinical Detail sub cat")
 #async def get_clinical_detail(endpoint: str, p_id: str, cat: str):
 #    """
